@@ -256,6 +256,6 @@ To do transfer between accounts, send a `POST` request to `/api/accounts/transfe
 ### Running Tests
 
 ```
-./vendor/bin/phpunit
+./vendor/bin/phpunit --testdox
 ```
 

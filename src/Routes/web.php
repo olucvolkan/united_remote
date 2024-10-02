@@ -11,6 +11,7 @@ $customerController = $controllerMap['Controller\CustomerController'] ?? null;
 
 if ($customerController) {
     $router->get('/api/customers/{id}', [$customerController, 'get']);
+    $router->get('/api/customers', [$customerController, 'getAll']);
     $router->post('/api/customers', [$customerController, 'post']);
     $router->put('/api/customers/{id}', [$customerController, 'put']);
     $router->delete('/api/customers/{id}', [$customerController, 'delete']);

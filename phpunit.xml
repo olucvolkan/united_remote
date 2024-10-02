@@ -5,6 +5,9 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="APP_BASE_URL" value="http://localhost:80"/>
+    </php>
     <coverage>
         <include>
             <directory suffix=".php">src</directory>
