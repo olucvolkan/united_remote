@@ -16,3 +16,12 @@ if ($customerController) {
     $router->delete('/api/customers/{id}', [$customerController, 'delete']);
 }
 
+$accountController = $controllerMap['Controller\AccountController'] ?? null;
+
+if ($accountController) {
+    $router->post('/api/accounts/{id}/deposit', [$accountController, 'deposit']);
+    $router->post('/api/accounts/{id}/withdraw', [$accountController, 'withdraw']);
+    $router->post('/api/accounts/transfer', [$accountController, 'transfer']);
+    $router->get('/api/accounts/{id}', [$accountController, 'getAccountBalance']);
+}
+

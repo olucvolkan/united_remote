@@ -1,16 +1,37 @@
 <?php
 namespace DTO;
 
-class AccountWithdrawDTO {
+
+use Core\Validator\Validator;
+
+class AccountWithdrawDTO extends Validator
+{
     public int $customerId;
     public float $funds;
 
-    public function __construct(array $data) {
-        $this->customerId = $data['customer_id'] ?? 0;
+
+    public function __construct(array $data)
+    {
         $this->funds = isset($data['funds']) ? (float) $data['funds'] : 0.0;
+
     }
 
-    public function isValid(): bool {
-        return $this->customerId > 0 && $this->funds > 0;
+    public function isValid(): bool
+    {
+        $rules = [
+            'funds' => 'required|float|min:0.01'
+        ];
+
+        $data = [
+            'funds' => $this->funds
+        ];
+
+        $isValid = $this->validate($data, $rules);
+
+        if (!$isValid) {
+            $this->errors = $this->getErrors();
+        }
+
+        return $isValid;
     }
 }

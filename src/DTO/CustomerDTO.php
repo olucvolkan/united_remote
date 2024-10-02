@@ -3,11 +3,10 @@ namespace DTO;
 
 use Core\Validator\Validator;
 
-class CustomerDTO {
+class CustomerDTO extends Validator{
     public string $name;
     public string $surname;
     public float $balance;
-    private Validator $validator;
     private  array $errors = [];
 
     public function __construct(array $data)
@@ -16,7 +15,6 @@ class CustomerDTO {
         $this->surname = $data['surname'] ?? '';
         $this->balance = isset($data['balance']) ? (float) $data['balance'] : 0.0;
 
-        $this->validator = new Validator();
     }
 
     public function isValid(): bool
@@ -33,10 +31,10 @@ class CustomerDTO {
             'balance' => $this->balance,
         ];
 
-        $isValid = $this->validator->validate($data, $rules);
+        $isValid = $this->validate($data, $rules);
 
         if (!$isValid) {
-            $this->errors = $this->validator->getErrors();
+            $this->errors = $this->getErrors();
         }
 
         return $isValid;

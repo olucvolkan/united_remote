@@ -2,7 +2,7 @@
 
 namespace Core\Validator;
 
-class Validator
+abstract class Validator
 {
     private array $errors = [];
 
@@ -60,6 +60,16 @@ class Validator
     private function max($value, $maxValue): bool
     {
         return is_numeric($value) && $value <= (float)$maxValue;
+    }
+
+    private function float($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
+    }
+
+    private function int($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_INT) !== false;
     }
 
     private function addError(string $field, string $rule, array $params = []): void
