@@ -12,10 +12,12 @@ class CustomerController extends BaseController {
 
     private CustomerRepository $customerRepository;
 
-    public function __construct( Request $request, Response $response, $database)
+    public function __construct( Request $request,
+                                 Response $response,
+                                 CustomerRepository $customerRepository)
     {
-        parent::__construct($request, $response, $database);
-        $this->customerRepository = new CustomerRepository($database);
+        parent::__construct($request, $response);
+        $this->customerRepository = $customerRepository;
     }
 
     public function post() {

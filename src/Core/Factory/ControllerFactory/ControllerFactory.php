@@ -3,33 +3,32 @@
 namespace Core\Factory\ControllerFactory;
 
 use Core\BaseController\BaseController;
+use DI\Container;
 
 class ControllerFactory
 {
 
-    public static function loadControllers(string $controllerDirectory, string $namespace, array $dependencies = []): array
+    /**
+     * Load all controllers using the DI container.
+     *
+     * @param Container $container The DI container.
+     * @param string $controllerDirectory The directory where controllers are located.
+     * @param string $namespace The base namespace of the controllers.
+     * @return array List of instantiated controllers.
+     */
+    public static function loadControllersFromContainer(Container $container, string $controllerDirectory, string $namespace): array
     {
         $controllers = [];
 
         foreach (glob($controllerDirectory . '/*.php') as $file) {
             $className = $namespace . '\\' . basename($file, '.php');
 
-            if (class_exists($className) && is_subclass_of($className, BaseController::class)) {
-                $controllers[] = self::createControllerInstance($className, $dependencies);
+            // If the class exists, get it from the DI container
+            if (class_exists($className)) {
+                $controllers[] = $container->get($className);
             }
         }
 
         return $controllers;
-    }
-
-    private static function createControllerInstance(string $className, array $dependencies)
-    {
-        $reflectionClass = new \ReflectionClass($className);
-
-        if (!$reflectionClass->isInstantiable()) {
-            throw new \Exception("Class can not initialize! $className");
-        }
-
-        return $reflectionClass->newInstanceArgs($dependencies);
     }
 }

@@ -16,11 +16,15 @@ class AccountController extends  BaseController {
     private CustomerRepository $customerRepository;
     private TransferService $transferService;
 
-    public function __construct( Request $request, Response $response, $database)
-    {
-        parent::__construct($request, $response, $database);
-        $this->customerRepository = new CustomerRepository($database);
-        $this->transferService = new TransferService($this->customerRepository);
+    public function __construct(
+        Request $request,
+        Response $response,
+        CustomerRepository $customerRepository,
+        TransferService $transferService
+    ) {
+        parent::__construct($request, $response);
+        $this->customerRepository = $customerRepository;
+        $this->transferService = $transferService;
     }
     public function getAccountBalance(int $id) {
         $customer = $this->customerRepository->findById($id);
@@ -41,17 +45,17 @@ class AccountController extends  BaseController {
                 'errors' => $dto->getErrors()
             ], HttpStatusCode::BAD_REQUEST);
         }
-        $this->database->beginTransaction();
+        $this->customerRepository->getPdo()->beginTransaction();
         try {
             $newBalance = $this->transferService->deposit($id,$dto->funds);
-            $this->database->commit();
+            $this->customerRepository->getPdo()->commit();
             return $this->response->json([
                 'status' => 'success',
                 'message' => 'Deposit successful',
                 'new_balance' => $newBalance
             ], HttpStatusCode::OK);
         } catch (\Throwable $e) {
-            $this->database->rollBack();
+            $this->customerRepository->getPdo()->rollBack();
             throw $e;
         }
     }
@@ -66,18 +70,18 @@ class AccountController extends  BaseController {
                 'errors' => $dto->getErrors()
             ], 400);
         }
-        $this->database->beginTransaction();
+        $this->customerRepository->getPdo()->beginTransaction();
         $newBalance = $this->transferService->withdraw($id, $dto->funds);
         try {
             $this->logTransaction($id, 'withdraw', $dto->funds);
-            $this->database->commit();
+            $this->customerRepository->getPdo()->commit();
             return $this->response->json([
                 'status' => 'success',
                 'message' => 'Withdraw successful',
                 'new_balance' => $newBalance
             ], HttpStatusCode::OK);
         } catch (\Throwable $e) {
-            $this->database->rollBack();
+            $this->customerRepository->getPdo()->rollBack();
             return $this->response->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -96,19 +100,19 @@ class AccountController extends  BaseController {
                 'errors' => $dto->getErrors()
             ], HttpStatusCode::BAD_REQUEST);
         }
-        $this->database->beginTransaction();
+        $this->customerRepository->getPdo()->beginTransaction();
         try {
             $this->transferService->withdraw($dto->from, $dto->funds);
             $this->transferService->deposit($dto->to, $dto->funds);
             $this->logTransaction($dto->from, 'transfer', -$dto->funds);
             $this->logTransaction($dto->to, 'transfer', $dto->funds);
-            $this->database->commit();
+            $this->customerRepository->getPdo()->commit();
             return $this->response->json([
                 'status' => 'success',
                 'message' => 'Transfer Successful',
             ], HttpStatusCode::OK);
         } catch (\Throwable $e) {
-            $this->database->rollBack();
+            $this->customerRepository->getPdo()->rollBack();
             return $this->response->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -117,7 +121,7 @@ class AccountController extends  BaseController {
     }
 
     private function logTransaction(int $customerId, string $type, float $amount) {
-        $stmt = $this->database->prepare("INSERT INTO transactions (customer_id, type, amount) VALUES (?, ?, ?)");
+        $stmt = $this->customerRepository->getPdo()->prepare("INSERT INTO transactions (customer_id, type, amount) VALUES (?, ?, ?)");
         $stmt->execute([$customerId, $type, $amount]);
     }
 }

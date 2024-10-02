@@ -48,4 +48,8 @@ class Repository implements RepositoryInterface
         return $this;
     }
 
+    public function getPdo()
+    {
+        return $this->pdo;
+    }
 }
