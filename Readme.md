@@ -17,6 +17,8 @@ src/
 │   ├── AccountController.php
 │   └── CustomerController.php
 │
+├── Config/
+│   ├── di.php               # Dipendency Injection configuration     
 ├── Core/                    # Core classes and system components
 │   ├── BaseController/      # Base controller to handle shared functionality
 │   ├── Database/            # Database connection and management classes

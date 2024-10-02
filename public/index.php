@@ -14,7 +14,7 @@ Env::load(__DIR__ . '/../.env');
 
 // Build the DI container
 $containerBuilder = new ContainerBuilder();
-$containerBuilder->addDefinitions(__DIR__ . '/../src/config/di.php');
+$containerBuilder->addDefinitions(__DIR__ . '/../src/Config/di.php');
 $container = $containerBuilder->build();
 
 // Resolve core components from the DI container
