@@ -43,6 +43,8 @@ src/
 └── Utils/                   # Utility classes for environment and status code management
 ├── Env.php
 └── HttpStatusCode.php
+tests
+└── Controller/                   # e2e controller tests
 ```
 
 ## Requirements
