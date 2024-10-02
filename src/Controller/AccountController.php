@@ -39,7 +39,7 @@ class AccountController extends  BaseController {
                 'status' => 'error',
                 'message' => 'Validation failed',
                 'errors' => $dto->getErrors()
-            ], 400);
+            ], HttpStatusCode::BAD_REQUEST);
         }
         $this->database->beginTransaction();
         try {
@@ -50,7 +50,7 @@ class AccountController extends  BaseController {
                 'message' => 'Deposit successful',
                 'new_balance' => $newBalance
             ], HttpStatusCode::OK);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->database->rollBack();
             throw $e;
         }
@@ -76,8 +76,12 @@ class AccountController extends  BaseController {
                 'message' => 'Withdraw successful',
                 'new_balance' => $newBalance
             ], HttpStatusCode::OK);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->database->rollBack();
+            return $this->response->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], HttpStatusCode::BAD_REQUEST);
             throw $e;
         }
     }
@@ -90,7 +94,7 @@ class AccountController extends  BaseController {
                 'status' => 'error',
                 'message' => 'Validation failed',
                 'errors' => $dto->getErrors()
-            ], 400);
+            ], HttpStatusCode::BAD_REQUEST);
         }
         $this->database->beginTransaction();
         try {
@@ -101,11 +105,14 @@ class AccountController extends  BaseController {
             $this->database->commit();
             return $this->response->json([
                 'status' => 'success',
-                'message' => 'Transfer Successfull',
+                'message' => 'Transfer Successful',
             ], HttpStatusCode::OK);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->database->rollBack();
-            throw $e;
+            return $this->response->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], HttpStatusCode::BAD_REQUEST);
         }
     }
 
