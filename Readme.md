@@ -84,21 +84,32 @@ src/
     DB_PASSWORD=yourpassword
     ```
 
-5. **Set up the database:**
+   5. **Set up the database:**
 
-   Use the following SQL command to create the necessary tables and schema:
+      Use the following SQL command to create the necessary tables and schema:
 
-    ```sql
-    CREATE DATABASE customer_api;
-    USE customer_api;
+ ```sql
+CREATE DATABASE customer_api;
+USE customer_api;
 
-    CREATE TABLE customers (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        surname VARCHAR(100) NOT NULL,
-        balance FLOAT NOT NULL DEFAULT 0
-    );
-    ```
+CREATE TABLE customers (
+id INT AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(100) NOT NULL,
+surname VARCHAR(100) NOT NULL,
+balance FLOAT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE transactions (
+id INT AUTO_INCREMENT PRIMARY KEY,
+customer_id INT NULL,
+type ENUM ('deposit', 'withdraw', 'transfer') NOT NULL,
+amount DECIMAL(10, 2) NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,
+CONSTRAINT transactions_ibfk_1 FOREIGN KEY (customer_id) REFERENCES customers (id)
+);
+
+CREATE INDEX customer_id ON transactions (customer_id);
+```
 
 6. **Start the local development server:**
 
@@ -187,6 +198,60 @@ To delete a customer, send a `DELETE` request to `/api/customers/10` with the fo
 }
 ```
 
+To give a deposit to customer, send a `POST` request to `/api/accounts/{accountId}/deposit` with the following payload:
+
+**Request Body:**
+
+```json
+{
+  "funds": 100.50
+}
+```
+**Response:**
+```json
+{
+   "status": "success",
+   "message": "Deposit successful",
+   "new_balance": 250.52
+}
+```
+
+To give a withdraw to customer, send a `POST` request to `/api/accounts/{accountId}/withdraw` with the following payload:
+
+**Request Body:**
+
+```json
+{
+  "funds": 100.50
+}
+```
+**Response:**
+```json
+{
+   "status": "success",
+   "message": "Withdraw successful",
+   "new_balance": 200.52
+}
+```
+
+To do transfer between accounts, send a `POST` request to `/api/accounts/transfer` with the following payload:
+
+**Request Body:**
+
+```json
+{
+   "from" : 10, //Customer id
+   "to" : 2,    //Customer id
+   "funds" : 50
+}
+```
+**Response:**
+```json
+{
+   "status": "success",
+   "message": "Transfer Successful"
+}
+```
 
 ### Running Tests
 

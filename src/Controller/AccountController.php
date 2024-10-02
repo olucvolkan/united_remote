@@ -47,7 +47,7 @@ class AccountController extends  BaseController {
             $this->database->commit();
             return $this->response->json([
                 'status' => 'success',
-                'message' => 'Withdraw successful',
+                'message' => 'Deposit successful',
                 'new_balance' => $newBalance
             ], HttpStatusCode::OK);
         } catch (\Exception $e) {
