@@ -65,11 +65,12 @@ src/
     ```bash
     cd united_remote
     ```
-
-3. **Install dependencies using Composer:**
+3. **Build with docker:**
 
     ```bash
-    composer install
+     docker-compose up -d --build
+     docker exec -it <container_id> /bin/bash
+     composer install 
     ```
 
 4. **Configure your environment variables:**
@@ -84,9 +85,9 @@ src/
     DB_PASSWORD=yourpassword
     ```
 
-   5. **Set up the database:**
+5. **Set up the database:**
 
-      Use the following SQL command to create the necessary tables and schema:
+   Use the following SQL command to create the necessary tables and schema:
 
  ```sql
 CREATE DATABASE customer_api;
@@ -110,14 +111,7 @@ CONSTRAINT transactions_ibfk_1 FOREIGN KEY (customer_id) REFERENCES customers (i
 
 CREATE INDEX customer_id ON transactions (customer_id);
 ```
-
-6. **Start the local development server:**
-
-    ```bash
-     docker-compose up -d --build 
-    ```
-
-7. **Test the API using Postman or cURL:**
+6. **Test the API using Postman or cURL:**
 
 ## Usage
 
