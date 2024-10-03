@@ -3,6 +3,7 @@
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use PHPUnit\Framework\TestCase;
+use Utils\HttpStatusCode;
 
 class AccountControllerTest extends TestCase
 {
@@ -28,51 +29,104 @@ class AccountControllerTest extends TestCase
         $this->deleteCustomer($customer['id']);
     }
 
-    public function testDepositFunds()
+    /**
+     *
+     * @return array
+     */
+    public function depositFundsDataProvider(): array
+    {
+        return [
+            'valid deposit' => [
+                20,
+                HttpStatusCode::OK,
+            ],
+            'negative deposit' => [
+                -100.0,
+                HttpStatusCode::BAD_REQUEST,
+            ],
+        ];
+    }
+
+    /**
+     *
+     * @dataProvider depositFundsDataProvider
+     */
+    public function testDepositFunds($funds, $statusCode)
     {
         $customer = $this->createCustomer(100);
 
         $depositData = [
-            'funds' => 50,
+            'funds' => $funds,
         ];
-
-        $response = $this->client->post("{$this->baseUrl}/api/accounts/{$customer['id']}/deposit", [
-            'json' => $depositData
-        ]);
-
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getBody(), true);
-
-        $this->assertArrayHasKey('status', $result);
-        $this->assertEquals('success', $result['status']);
-        $this->assertArrayHasKey('new_balance', $result);
-        $this->assertEquals(150, $result['new_balance']);
-        $this->deleteCustomer($customer['id']);
-
+        try {
+            $response = $this->client->post("{$this->baseUrl}/api/accounts/{$customer['id']}/deposit", [
+                'json' => $depositData
+            ]);
+            $result = json_decode($response->getBody(), true);
+            $this->assertArrayHasKey('status', $result);
+            $this->assertEquals('success', $result['status']);
+            $this->assertArrayHasKey('new_balance', $result);
+            $this->assertEquals(120, $result['new_balance']);
+            $this->deleteCustomer($customer['id']);
+        }catch (ClientException $e) {
+            $this->assertEquals(HttpStatusCode::BAD_REQUEST, $e->getResponse()->getStatusCode());
+            $errorResponse = json_decode($e->getResponse()->getBody(), true);
+            $this->assertEquals('error', $errorResponse['status']);
+            $this->assertEquals('Validation failed', $errorResponse['message']);
+            $this->assertEquals('Validation failed for rule \'min\' with parameters: 0.01',$errorResponse['errors']['funds'][0]);
+        }
     }
 
-    public function testWithdrawFunds()
+    /**
+     *
+     * @return array
+     */
+    public function withdrawFundsDataProvider(): array
+    {
+        return [
+            'valid withdraw' => [
+                20,
+                HttpStatusCode::OK,
+            ],
+            'negative withdraw' => [
+                -100.0,
+                HttpStatusCode::BAD_REQUEST,
+            ],
+        ];
+    }
+
+    /**
+     *
+     * @dataProvider withdrawFundsDataProvider
+     */
+    public function testWithdrawFunds($funds, $statusCode)
     {
         $customer = $this->createCustomer(100);
 
-        $withdrawData = [
-            'funds' => 20.00,
-        ];
+        try {
+            $withdrawData = [
+                'funds' => $funds
+            ];
 
-        $response = $this->client->post("{$this->baseUrl}/api/accounts/{$customer['id']}/withdraw", [
-            'json' => $withdrawData
-        ]);
-
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getBody(), true);
-
-        $this->assertArrayHasKey('status', $result);
-        $this->assertEquals('success', $result['status']);
-        $this->assertArrayHasKey('new_balance', $result);
-        $this->assertEquals(80, $result['new_balance']);
-        $this->deleteCustomer($customer['id']);
+            $response = $this->client->post("{$this->baseUrl}/api/accounts/{$customer['id']}/withdraw", [
+                'json' => $withdrawData
+            ]);
+            $this->assertEquals($statusCode, $response->getStatusCode());
+            $result = json_decode($response->getBody(), true);
+            if ($statusCode === HttpStatusCode::OK) {
+                $this->assertArrayHasKey('status', $result);
+                $this->assertEquals('success', $result['status']);
+                $this->assertArrayHasKey('new_balance', $result);
+                $this->assertEquals(80, $result['new_balance']);
+                $this->deleteCustomer($customer['id']);
+            }
+        }catch (ClientException $e){
+                $this->assertEquals(HttpStatusCode::BAD_REQUEST, $e->getResponse()->getStatusCode());
+                $errorResponse = json_decode($e->getResponse()->getBody(), true);
+                $this->assertEquals('error', $errorResponse['status']);
+                $this->assertEquals('Validation failed', $errorResponse['message']);
+                $this->assertEquals('Validation failed for rule \'min\' with parameters: 0.01',$errorResponse['errors']['funds'][0]);
+            }
 
     }
 
@@ -112,7 +166,6 @@ class AccountControllerTest extends TestCase
     }
 
     /**
-     * Test transfer funds functionality with data provider.
      *
      * @dataProvider transferFundsDataProvider
      */
