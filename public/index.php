@@ -18,8 +18,6 @@ $containerBuilder->addDefinitions(__DIR__ . '/../src/Config/di.php');
 $container = $containerBuilder->build();
 
 // Resolve core components from the DI container
-$request = $container->get(Request::class);
-$response = $container->get(Response::class);
 $router = $container->get(Router::class);
 
 // Load all controllers from the container
